@@ -9,6 +9,8 @@ export function openDeltaNeutralPosition(
     opportunityId: opportunity.id,
     tokenSymbol: opportunity.tokenSymbol,
     direction: 'delta_neutral',
+    longVenue: opportunity.longVenue,
+    shortVenue: opportunity.shortVenue,
     entryPrice: spotPrice,
     currentPrice: spotPrice,
     positionSizeUsd,

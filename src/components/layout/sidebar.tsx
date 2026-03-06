@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, BarChart3, Vault, Settings2, TrendingUp } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useWallet, truncateAddress } from '@/lib/hooks/use-wallet'
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -14,6 +15,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { address, connectedDexes, activePairs } = useWallet()
 
   return (
     <aside className="hidden md:flex flex-col w-64 bg-sigma-surface border-r border-sigma-border">
@@ -50,15 +52,47 @@ export function Sidebar() {
         })}
       </nav>
 
+      {/* Connected DEXes */}
+      {connectedDexes.length > 0 && (
+        <div className="px-4 mx-3 mb-3 py-3 rounded-lg bg-sigma-green/5 border border-sigma-green/10">
+          <p className="text-[10px] font-semibold text-sigma-green uppercase tracking-wider mb-2">Connected DEXes</p>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-sigma-green" />
+              <span className="text-xs text-sigma-text-dim">GMX v2</span>
+            </div>
+            {connectedDexes.map((dex) => (
+              <div key={dex} className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-sigma-green" />
+                <span className="text-xs text-sigma-text-dim">{dex}</span>
+              </div>
+            ))}
+          </div>
+          {activePairs.length > 0 && (
+            <div className="mt-2 pt-2 border-t border-sigma-border">
+              <p className="text-[10px] text-sigma-text-dim mb-1">Active Pairs</p>
+              {activePairs.map((pair) => (
+                <p key={pair} className="text-[10px] text-sigma-green font-mono">{pair}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="p-4 mx-3 mb-4 rounded-lg bg-sigma-amber/10 border border-sigma-amber/20">
         <p className="text-xs font-semibold text-sigma-amber">PAPER TRADING</p>
         <p className="text-xs text-sigma-text-muted mt-1">Simulated positions only</p>
       </div>
 
       <div className="p-4 border-t border-sigma-border">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-sigma-green animate-pulse" />
-          <span className="text-xs text-sigma-text-dim">Avalanche C-Chain</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-sigma-green animate-pulse" />
+            <span className="text-xs text-sigma-text-dim">Avalanche C-Chain</span>
+          </div>
+          {address && (
+            <span className="text-[10px] text-sigma-text-dim font-mono">{truncateAddress(address)}</span>
+          )}
         </div>
       </div>
     </aside>

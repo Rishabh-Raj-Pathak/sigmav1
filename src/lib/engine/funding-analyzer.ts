@@ -20,9 +20,8 @@ export function generateSimulatedVenueRates(
   const baseSeed = hashString(tokenSymbol) + Math.floor(timestamp / 300)
 
   const venues: { name: string; meanOffset: number; stdDev: number }[] = [
-    { name: 'Vertex', meanOffset: 0.0, stdDev: 0.15 },
-    { name: 'Drift', meanOffset: 0.02, stdDev: 0.20 },
     { name: 'HyperLiquid', meanOffset: -0.01, stdDev: 0.18 },
+    { name: 'Paradex', meanOffset: 0.015, stdDev: 0.16 },
   ]
 
   return venues.map((venue, i) => {

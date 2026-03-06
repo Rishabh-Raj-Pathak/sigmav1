@@ -78,9 +78,9 @@ export function markOpportunityTaken(id: number): void {
 
 export function insertPaperTrade(t: PaperTrade): number {
   const result = db().prepare(`
-    INSERT INTO paper_trades (opportunity_id, token_symbol, direction, entry_price, current_price, position_size_usd, leverage)
-    VALUES (?, ?, 'delta_neutral', ?, ?, ?, 1.0)
-  `).run(t.opportunityId || null, t.tokenSymbol, t.entryPrice, t.entryPrice, t.positionSizeUsd)
+    INSERT INTO paper_trades (opportunity_id, token_symbol, direction, long_venue, short_venue, entry_price, current_price, position_size_usd, leverage)
+    VALUES (?, ?, 'delta_neutral', ?, ?, ?, ?, ?, 1.0)
+  `).run(t.opportunityId || null, t.tokenSymbol, t.longVenue || null, t.shortVenue || null, t.entryPrice, t.entryPrice, t.positionSizeUsd)
   return Number(result.lastInsertRowid)
 }
 
@@ -90,6 +90,8 @@ function mapTrade(row: Record<string, unknown>): PaperTrade {
     opportunityId: row.opportunity_id as number | undefined,
     tokenSymbol: row.token_symbol as string,
     direction: 'delta_neutral',
+    longVenue: (row.long_venue as string) || undefined,
+    shortVenue: (row.short_venue as string) || undefined,
     entryPrice: row.entry_price as number,
     currentPrice: row.current_price as number | undefined,
     positionSizeUsd: row.position_size_usd as number,

@@ -2,20 +2,66 @@
 
 import { useState } from 'react'
 import { mutate } from 'swr'
-import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { TableSkeleton } from '@/components/ui/skeleton'
 import { useVault } from '@/lib/hooks/use-vault'
 import { formatUsd, formatPnl } from '@/lib/utils/formatting'
 import type { PaperTrade } from '@/lib/utils/types'
 
-type Row = PaperTrade & Record<string, unknown>
+interface PositionLeg {
+  tradeId: number | undefined
+  tokenSymbol: string
+  leg: 'Long' | 'Short'
+  venue: string
+  entryPrice: number
+  currentPrice: number
+  positionSizeUsd: number
+  fundingCollected: number
+  borrowingPaid: number
+  unrealizedPnl: number
+  openedAt: number
+}
 
 function durationStr(openedAt: number): string {
   const secs = Math.floor(Date.now() / 1000) - openedAt
   if (secs < 3600) return `${Math.floor(secs / 60)}m`
   if (secs < 86400) return `${Math.floor(secs / 3600)}h`
   return `${Math.floor(secs / 86400)}d`
+}
+
+function expandToLegs(trades: PaperTrade[]): (PositionLeg & Record<string, unknown>)[] {
+  const rows: (PositionLeg & Record<string, unknown>)[] = []
+  for (const trade of trades) {
+    const half = trade.positionSizeUsd / 2
+    rows.push({
+      tradeId: trade.id,
+      tokenSymbol: trade.tokenSymbol,
+      leg: 'Long',
+      venue: trade.longVenue || 'GMX',
+      entryPrice: trade.entryPrice,
+      currentPrice: trade.currentPrice ?? trade.entryPrice,
+      positionSizeUsd: half,
+      fundingCollected: trade.fundingCollected / 2,
+      borrowingPaid: trade.borrowingPaid / 2,
+      unrealizedPnl: trade.unrealizedPnl / 2,
+      openedAt: trade.openedAt,
+    })
+    rows.push({
+      tradeId: trade.id,
+      tokenSymbol: trade.tokenSymbol,
+      leg: 'Short',
+      venue: trade.shortVenue || 'GMX',
+      entryPrice: trade.entryPrice,
+      currentPrice: trade.currentPrice ?? trade.entryPrice,
+      positionSizeUsd: half,
+      fundingCollected: trade.fundingCollected / 2,
+      borrowingPaid: trade.borrowingPaid / 2,
+      unrealizedPnl: trade.unrealizedPnl / 2,
+      openedAt: trade.openedAt,
+    })
+  }
+  return rows
 }
 
 export function PositionsTable() {
@@ -35,7 +81,7 @@ export function PositionsTable() {
     }
   }
 
-  const columns: Column<Row>[] = [
+  const columns: Column<PositionLeg & Record<string, unknown>>[] = [
     {
       key: 'tokenSymbol',
       label: 'Token',
@@ -45,17 +91,20 @@ export function PositionsTable() {
       ),
     },
     {
-      key: 'entryPrice',
-      label: 'Entry',
-      sortable: true,
-      align: 'right',
-      render: (row) => formatUsd(row.entryPrice),
+      key: 'leg',
+      label: 'Side',
+      render: (row) => (
+        <Badge variant={row.leg === 'Long' ? 'green' : 'red'}>
+          {row.leg}
+        </Badge>
+      ),
     },
     {
-      key: 'currentPrice',
-      label: 'Current',
-      align: 'right',
-      render: (row) => formatUsd(row.currentPrice ?? row.entryPrice),
+      key: 'venue',
+      label: 'Venue',
+      render: (row) => (
+        <span className="text-sigma-text-dim text-xs">{row.venue}</span>
+      ),
     },
     {
       key: 'positionSizeUsd',
@@ -66,20 +115,11 @@ export function PositionsTable() {
     },
     {
       key: 'fundingCollected',
-      label: 'Funding Earned',
+      label: 'Funding',
       sortable: true,
       align: 'right',
       render: (row) => (
         <span className="text-sigma-green">{formatPnl(row.fundingCollected)}</span>
-      ),
-    },
-    {
-      key: 'borrowingPaid',
-      label: 'Borrowing Paid',
-      sortable: true,
-      align: 'right',
-      render: (row) => (
-        <span className="text-sigma-red">{formatPnl(-row.borrowingPaid)}</span>
       ),
     },
     {
@@ -105,34 +145,41 @@ export function PositionsTable() {
       key: 'actions',
       label: '',
       align: 'right',
-      render: (row) => (
+      render: (row) => row.leg === 'Long' ? (
         <button
           onClick={(e) => {
             e.stopPropagation()
-            if (row.id != null) handleClose(row.id)
+            if (row.tradeId != null) handleClose(row.tradeId)
           }}
-          disabled={closingId === row.id}
+          disabled={closingId === row.tradeId}
           className="px-2 py-1 text-xs font-medium rounded-lg bg-sigma-red/10 text-sigma-red border border-sigma-red/20 hover:bg-sigma-red/20 transition-colors disabled:opacity-40"
         >
-          {closingId === row.id ? 'Closing...' : 'Close'}
+          {closingId === row.tradeId ? 'Closing...' : 'Close'}
         </button>
-      ),
+      ) : null,
     },
   ]
 
   const openPositions = (vault?.positions ?? []).filter((p) => p.status === 'open')
+  const legs = expandToLegs(openPositions)
 
   return (
-    <Card title="Open Positions" subtitle={`${openPositions.length} active`}>
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h3 className="text-lg font-semibold text-sigma-text">Open Positions</h3>
+          <p className="text-xs text-sigma-text-muted">{openPositions.length} active</p>
+        </div>
+      </div>
       {isLoading ? (
         <TableSkeleton rows={4} />
       ) : (
         <DataTable
           columns={columns}
-          data={openPositions as Row[]}
+          data={legs}
           emptyMessage="No open positions"
         />
       )}
-    </Card>
+    </div>
   )
 }

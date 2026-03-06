@@ -58,6 +58,8 @@ export function initializeSchema(db: Database.Database): void {
       opportunity_id INTEGER REFERENCES opportunities(id),
       token_symbol TEXT NOT NULL,
       direction TEXT NOT NULL DEFAULT 'delta_neutral',
+      long_venue TEXT,
+      short_venue TEXT,
       entry_price REAL NOT NULL,
       current_price REAL,
       position_size_usd REAL NOT NULL,
@@ -127,4 +129,8 @@ export function initializeSchema(db: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_sl_time
       ON signal_log(timestamp DESC);
   `)
+
+  // Migration: add venue columns to paper_trades if missing
+  try { db.exec(`ALTER TABLE paper_trades ADD COLUMN long_venue TEXT`) } catch { /* already exists */ }
+  try { db.exec(`ALTER TABLE paper_trades ADD COLUMN short_venue TEXT`) } catch { /* already exists */ }
 }

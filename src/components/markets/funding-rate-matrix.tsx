@@ -52,7 +52,7 @@ export function FundingRateMatrix({ onRowClick }: FundingRateMatrixProps) {
         </span>
       ),
     },
-    ...['Vertex', 'Drift', 'HyperLiquid'].map((venue) => ({
+    ...['HyperLiquid', 'Paradex'].map((venue) => ({
       key: venue.toLowerCase(),
       label: venue,
       sortable: true,

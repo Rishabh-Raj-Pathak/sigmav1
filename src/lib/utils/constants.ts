@@ -2,7 +2,7 @@ export const GMX_API_BASE = process.env.NEXT_PUBLIC_GMX_API_BASE || 'https://ava
 
 export const POLLING_INTERVAL = Number(process.env.NEXT_PUBLIC_POLLING_INTERVAL) || 30000
 
-export const SIMULATED_VENUES = ['GMX', 'Vertex', 'Drift', 'HyperLiquid'] as const
+export const SIMULATED_VENUES = ['GMX', 'HyperLiquid', 'Paradex'] as const
 
 export const CHAINLINK_FEEDS: Record<string, `0x${string}`> = {
   'BTC/USD': '0x2779D32d5166BAaa2B2b658333bA7e6Ec0C65743',

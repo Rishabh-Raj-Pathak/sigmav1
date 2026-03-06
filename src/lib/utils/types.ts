@@ -43,6 +43,8 @@ export interface PaperTrade {
   opportunityId?: number
   tokenSymbol: string
   direction: 'delta_neutral'
+  longVenue?: string
+  shortVenue?: string
   entryPrice: number
   currentPrice?: number
   positionSizeUsd: number

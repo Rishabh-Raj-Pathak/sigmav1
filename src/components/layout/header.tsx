@@ -1,11 +1,15 @@
 'use client'
 
-import { Activity, Clock, Menu } from 'lucide-react'
+import { Activity, Clock, Menu, LogOut } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useWallet, truncateAddress } from '@/lib/hooks/use-wallet'
 
 export function Header() {
   const [time, setTime] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { address, disconnectWallet } = useWallet()
+  const router = useRouter()
 
   useEffect(() => {
     const update = () => {
@@ -21,6 +25,11 @@ export function Header() {
     const interval = setInterval(update, 1000)
     return () => clearInterval(interval)
   }, [])
+
+  const handleDisconnect = () => {
+    disconnectWallet()
+    router.push('/onboarding')
+  }
 
   return (
     <header className="h-14 border-b border-sigma-border bg-sigma-surface/50 backdrop-blur-sm flex items-center justify-between px-6">
@@ -40,10 +49,25 @@ export function Header() {
         </div>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4">
         <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-md bg-sigma-amber/10 border border-sigma-amber/20">
           <span className="text-xs font-semibold text-sigma-amber">PAPER TRADING MODE</span>
         </div>
+
+        {address && (
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-md bg-sigma-green/5 border border-sigma-green/20">
+            <div className="w-2 h-2 rounded-full bg-sigma-green" />
+            <span className="text-xs font-mono text-sigma-text-dim">{truncateAddress(address)}</span>
+            <button
+              onClick={handleDisconnect}
+              className="text-sigma-text-dim hover:text-sigma-red transition-colors ml-1"
+              title="Disconnect wallet"
+            >
+              <LogOut className="w-3 h-3" />
+            </button>
+          </div>
+        )}
+
         <div className="flex items-center gap-2 text-sigma-text-dim">
           <Clock className="w-4 h-4" />
           <span className="text-sm font-mono">{time} UTC</span>

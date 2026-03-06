@@ -1,0 +1,48 @@
+'use client'
+
+import { useState } from 'react'
+import { FundingRateMatrix } from '@/components/markets/funding-rate-matrix'
+import { MarketDetailCard } from '@/components/markets/market-detail-card'
+import { FundingRateChart } from '@/components/charts/funding-rate-chart'
+import { type FundingRateWithComparison } from '@/lib/hooks/use-funding-rates'
+import { Card } from '@/components/ui/card'
+
+export default function MarketsPage() {
+  const [selected, setSelected] = useState<FundingRateWithComparison | null>(null)
+
+  const chartData = selected
+    ? selected.venueComparison.venues.flatMap((v) =>
+        Array.from({ length: 24 }, (_, i) => ({
+          timestamp: Date.now() / 1000 - (23 - i) * 3600,
+          rate: v.fundingRate * (1 + Math.sin(i * 0.3 + v.name.length) * 0.2),
+          venue: v.name,
+        }))
+      )
+    : []
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-sigma-text glow-text">Markets</h2>
+        <p className="text-sm text-sigma-text-muted mt-1">Funding rate comparison across venues</p>
+      </div>
+
+      <Card title="Funding Rate Matrix" subtitle="Click a row to view details">
+        <FundingRateMatrix onRowClick={(row) => setSelected(row as FundingRateWithComparison)} />
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <MarketDetailCard market={selected} />
+        <Card title={selected ? `${selected.tokenSymbol} Rate History` : 'Rate History'} subtitle="24h simulated history">
+          {selected ? (
+            <FundingRateChart data={chartData} title={`${selected.tokenSymbol} Funding Rates`} />
+          ) : (
+            <div className="h-64 flex items-center justify-center text-sigma-text-muted text-sm">
+              Select a market to view rate history
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  )
+}

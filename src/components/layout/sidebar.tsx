@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   BarChart3,
   Vault,
   Settings2,
-  TrendingUp,
   Zap,
 } from "lucide-react";
 import { clsx } from "clsx";
@@ -28,13 +28,6 @@ const sidebarStyle: React.CSSProperties = {
     "8px 0 32px rgba(0,0,0,0.55), inset -1px 0 0 rgba(255,255,255,0.03)",
 };
 
-/* ── Logo icon ─────────────────────────────────────────────────────────── */
-const logoIconStyle: React.CSSProperties = {
-  background:
-    "radial-gradient(circle at 40% 30%, rgba(255,80,70,0.22) 0%, rgba(180,30,30,0.10) 60%, transparent 100%)",
-  boxShadow:
-    "inset 0 1px 0 rgba(255,255,255,0.08), 0 0 18px rgba(255,59,69,0.12)",
-};
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -48,17 +41,17 @@ export function Sidebar() {
       {/* ── Brand / Logo ─────────────────────────────────────────────── */}
       <div className="px-5 pt-6 pb-5">
         <Link href="/" className="flex items-center gap-3 group">
-          <div
-            className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-105"
-            style={logoIconStyle}
-          >
-            <TrendingUp
-              className="w-4 h-4"
-              strokeWidth={1.75}
+          <div className="w-9 h-9 shrink-0 flex items-center justify-center transition-all duration-300 group-hover:scale-105">
+            <Image
+              src="/main-logo.png"
+              alt="SigmaV"
+              width={34}
+              height={34}
               style={{
-                color: "rgba(255,100,90,0.95)",
-                filter: "drop-shadow(0 0 4px rgba(255,59,69,0.55))",
+                filter: "drop-shadow(0 0 6px rgba(255,59,69,0.5))",
+                transition: "filter 0.3s ease",
               }}
+              className="group-hover:[filter:drop-shadow(0_0_10px_rgba(255,59,69,0.75))]"
             />
           </div>
           <div className="min-w-0">

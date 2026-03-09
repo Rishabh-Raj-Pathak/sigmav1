@@ -104,25 +104,30 @@ export function SignalLog() {
           {signals.map((sig, i) => (
             <div
               key={sig.id ?? i}
-              className="flex items-start gap-3 p-3 rounded-xl transition-all duration-200"
+              className="flex flex-col gap-1.5 p-3 rounded-xl transition-all duration-200"
               style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
             >
-              <Badge variant={typeVariant(sig.signalType)}>{sig.signalType}</Badge>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>
-                    {sig.tokenSymbol}
-                  </span>
-                  {sig.executed && (
-                    <span className="text-[10px] font-semibold" style={{ color: '#22c55e' }}>executed</span>
-                  )}
-                </div>
-                <p className="text-xs mt-0.5" style={{ color: '#828282' }}>{sig.action}</p>
-                <p className="text-[11px] mt-0.5" style={{ color: '#555555' }}>{sig.reason}</p>
+              {/* Row 1: Tag pill + Asset + Status */}
+              <div className="flex items-center gap-2">
+                <Badge variant={typeVariant(sig.signalType)}>{sig.signalType}</Badge>
+                <span className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>
+                  {sig.tokenSymbol}
+                </span>
+                {sig.executed && (
+                  <span className="text-[10px] font-semibold tracking-wide" style={{ color: '#22c55e' }}>executed</span>
+                )}
               </div>
-              <span className="text-xs whitespace-nowrap shrink-0" style={{ color: '#555555' }}>
+
+              {/* Row 2: Primary action */}
+              <p className="text-xs font-medium" style={{ color: '#CCCCCC' }}>{sig.action}</p>
+
+              {/* Row 3: Secondary reason */}
+              <p className="text-[11px] leading-relaxed" style={{ color: '#555555' }}>{sig.reason}</p>
+
+              {/* Row 4: Timestamp */}
+              <p className="text-[10px] text-right" style={{ color: '#444444', opacity: 0.8 }}>
                 {formatTimestamp(sig.timestamp)}
-              </span>
+              </p>
             </div>
           ))}
         </div>

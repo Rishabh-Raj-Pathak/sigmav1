@@ -2,14 +2,27 @@
 
 import { useState } from "react";
 import { mutate } from "swr";
+import { ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { useOpportunities } from "@/lib/hooks/use-opportunities";
 import { formatAnnualizedRate, formatPercentage } from "@/lib/utils/formatting";
+import { DEX_TRADE_URLS } from "@/lib/utils/constants";
 
-const BRAND_RED = "#e0323c";
+const BRAND_RED   = "#e0323c";
 const BRAND_GREEN = "#1fa854";
 const LABEL_COLOR = "#3a3a3a";
+
+/** Opens the long + short DEX pages in new tabs for a given opportunity. */
+function openDexTabs(longVenue: string, shortVenue: string) {
+  const urls = [longVenue, shortVenue]
+    .map((v) => DEX_TRADE_URLS[v])
+    .filter(Boolean) as string[]
+
+  // Must run synchronously inside the user-gesture handler (before any await)
+  // so popup blockers don't suppress the windows.
+  urls.forEach((url) => window.open(url, "_blank", "noopener,noreferrer"))
+}
 
 export function OpportunityFeed() {
   const { data: opportunities, isLoading } = useOpportunities();
@@ -18,19 +31,23 @@ export function OpportunityFeed() {
   const handleTakePosition = async (
     opp: NonNullable<typeof opportunities>[number],
   ) => {
+    // 1. Open DEX tabs immediately — must be before any await
+    openDexTabs(opp.longVenue, opp.shortVenue);
+
+    // 2. Record paper trade
     setTakingId(opp.id ?? -1);
     try {
       const res = await fetch("/api/paper-trade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          opportunityId: opp.id,
-          tokenSymbol: opp.tokenSymbol,
-          entryPrice: opp.entryPrice,
-          longVenue: opp.longVenue,
-          shortVenue: opp.shortVenue,
-          estimatedApr: opp.estimatedApr,
-          riskScore: opp.riskScore,
+          opportunityId:  opp.id,
+          tokenSymbol:    opp.tokenSymbol,
+          entryPrice:     opp.entryPrice,
+          longVenue:      opp.longVenue,
+          shortVenue:     opp.shortVenue,
+          estimatedApr:   opp.estimatedApr,
+          riskScore:      opp.riskScore,
           positionSizeUsd: 10000,
           leverage: 1,
         }),
@@ -54,7 +71,11 @@ export function OpportunityFeed() {
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{ background: "rgba(255,255,255,0.04)" }}
-          />
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: '#333' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+          </div>
           <p className="text-sm" style={{ color: "#555555" }}>
             No opportunities detected
           </p>
@@ -79,40 +100,16 @@ export function OpportunityFeed() {
                   >
                     {opp.tokenSymbol}
                   </p>
-                  <p
-                    style={{
-                      fontSize: "10px",
-                      color: "rgba(255,255,255,0.2)",
-                      letterSpacing: "0.02em",
-                      lineHeight: 1,
-                    }}
-                  >
+                  <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.2)", letterSpacing: "0.02em", lineHeight: 1 }}>
                     {opp.longVenue} → {opp.shortVenue}
                   </p>
                 </div>
 
                 <div className="flex flex-col items-end" style={{ gap: "2px" }}>
-                  <span
-                    style={{
-                      fontSize: "9px",
-                      fontWeight: 600,
-                      textTransform: "uppercase" as const,
-                      letterSpacing: "0.1em",
-                      color: LABEL_COLOR,
-                      fontFamily: "'JetBrains Mono', monospace",
-                    }}
-                  >
+                  <span style={{ fontSize: "9px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: LABEL_COLOR, fontFamily: "'JetBrains Mono', monospace" }}>
                     Risk
                   </span>
-                  <span
-                    style={{
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.01em",
-                      color: BRAND_RED,
-                      fontFamily: "'JetBrains Mono', monospace",
-                    }}
-                  >
+                  <span style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "-0.01em", color: BRAND_RED, fontFamily: "'JetBrains Mono', monospace" }}>
                     {opp.riskScore}
                   </span>
                 </div>
@@ -122,78 +119,76 @@ export function OpportunityFeed() {
               <div className="flex items-end justify-between gap-3">
                 <div className="flex items-end gap-5">
                   <div>
-                    <p
-                      style={{
-                        fontSize: "9px",
-                        fontWeight: 600,
-                        textTransform: "uppercase" as const,
-                        letterSpacing: "0.1em",
-                        color: LABEL_COLOR,
-                        marginBottom: "3px",
-                      }}
-                    >
+                    <p style={{ fontSize: "9px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: LABEL_COLOR, marginBottom: "3px" }}>
                       Spread
                     </p>
-                    <p
-                      style={{
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        fontFamily: "'JetBrains Mono', monospace",
-                        color: BRAND_RED,
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
+                    <p style={{ fontSize: "13px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: BRAND_RED, letterSpacing: "-0.01em" }}>
                       {formatAnnualizedRate(opp.fundingSpread)}
                     </p>
                   </div>
 
                   <div>
-                    <p
-                      style={{
-                        fontSize: "9px",
-                        fontWeight: 600,
-                        textTransform: "uppercase" as const,
-                        letterSpacing: "0.1em",
-                        color: LABEL_COLOR,
-                        marginBottom: "3px",
-                      }}
-                    >
+                    <p style={{ fontSize: "9px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: LABEL_COLOR, marginBottom: "3px" }}>
                       APR
                     </p>
-                    <p
-                      style={{
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        fontFamily: "'JetBrains Mono', monospace",
-                        color: BRAND_GREEN,
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
+                    <p style={{ fontSize: "13px", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: BRAND_GREEN, letterSpacing: "-0.01em" }}>
                       {formatPercentage(opp.estimatedApr / 100)}
                     </p>
                   </div>
                 </div>
 
+                {/* Take Position button — opens DEX tabs + records paper trade */}
                 <button
-                  onClick={() => handleTakePosition(opp)}
+                  onClick={() => opp.canTakePosition && handleTakePosition(opp)}
                   disabled={!opp.canTakePosition || takingId === (opp.id ?? -1)}
-                  className="opp-take-btn whitespace-nowrap transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
+                  className="opp-take-btn group relative flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
                   style={{
                     fontSize: "11px",
                     fontWeight: 500,
                     padding: "8px 14px",
                     minHeight: "36px",
                     borderRadius: "10px",
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    color: "rgba(255,255,255,0.55)",
+                    background: opp.canTakePosition
+                      ? "rgba(34,197,94,0.08)"
+                      : "rgba(255,255,255,0.04)",
+                    border: opp.canTakePosition
+                      ? "1px solid rgba(34,197,94,0.18)"
+                      : "1px solid rgba(255,255,255,0.08)",
+                    color: opp.canTakePosition
+                      ? "#22c55e"
+                      : "rgba(255,255,255,0.35)",
                     cursor: opp.canTakePosition ? "pointer" : "not-allowed",
                     letterSpacing: "0.01em",
                   }}
+                  title={
+                    opp.canTakePosition
+                      ? `Open ${opp.longVenue} + ${opp.shortVenue} and record paper trade`
+                      : (opp.reason ?? "Cannot take position")
+                  }
                 >
-                  {takingId === (opp.id ?? -1) ? "Opening…" : "Take Position"}
+                  {takingId === (opp.id ?? -1) ? (
+                    <>
+                      <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Opening…
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLink className="w-3 h-3 shrink-0" />
+                      Trade
+                    </>
+                  )}
                 </button>
               </div>
+
+              {/* DEX link row — shown only when canTakePosition is false and there's a reason */}
+              {!opp.canTakePosition && opp.reason && (
+                <p className="text-[10px] mt-2 leading-relaxed" style={{ color: '#3a3a3a' }}>
+                  {opp.reason}
+                </p>
+              )}
             </div>
           ))}
         </div>

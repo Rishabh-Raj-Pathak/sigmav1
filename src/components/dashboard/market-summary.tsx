@@ -30,17 +30,13 @@ export function MarketSummary() {
           {top5.map((m) => {
             const totalOI = m.openInterestLong + m.openInterestShort
             const longPct = totalOI > 0 ? (m.openInterestLong / totalOI) * 100 : 50
-            const isPositive = m.fundingRateLong >= 0
 
             return (
               <div key={m.marketToken} className="flex items-center gap-3">
                 <span className="text-sm font-bold w-14 shrink-0" style={{ color: '#FFFFFF' }}>
                   {m.tokenSymbol}
                 </span>
-                <span
-                  className="text-xs font-mono w-20 text-right shrink-0 font-semibold"
-                  style={{ color: isPositive ? '#22c55e' : '#FF3B45' }}
-                >
+                <span className="text-xs font-mono w-20 text-right shrink-0 font-semibold" style={{ color: '#FFFFFF' }}>
                   {formatRate(m.fundingRateLong)}
                 </span>
                 <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
@@ -48,11 +44,11 @@ export function MarketSummary() {
                     className="h-full rounded-full transition-all duration-500"
                     style={{
                       width: `${longPct}%`,
-                      background: 'linear-gradient(90deg, #FF3B45 0%, rgba(255,59,69,0.6) 100%)',
+                      background: 'linear-gradient(90deg, var(--brand) 0%, rgba(255,59,69,0.5) 100%)',
                     }}
                   />
                 </div>
-                <span className="text-xs font-mono w-16 text-right shrink-0" style={{ color: '#828282' }}>
+                <span className="text-xs font-mono w-16 text-right shrink-0" style={{ color: '#FFFFFF' }}>
                   {formatUsd(totalOI)}
                 </span>
               </div>

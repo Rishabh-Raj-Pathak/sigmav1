@@ -1,29 +1,41 @@
-import { NextResponse } from 'next/server'
-import { getOpenTrades, getStrategyConfig, getVaultHistory, getAllTrades } from '@/lib/db/queries'
-import { computeVaultState } from '@/lib/engine/vault-simulator'
+import { NextResponse } from "next/server";
+import {
+  getOpenTrades,
+  getStrategyConfig,
+  getVaultHistory,
+  getAllTrades,
+} from "@/lib/db/queries";
+import { computeVaultState } from "@/lib/engine/vault-simulator";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const config = getStrategyConfig()
-    const openTrades = getOpenTrades()
-    const allTrades = getAllTrades(100)
+    const config = getStrategyConfig();
+    const openTrades = getOpenTrades();
+    const allTrades = getAllTrades(100);
 
     const closedPnl = allTrades
-      .filter((t) => t.status === 'closed' && t.realizedPnl != null)
-      .reduce((sum, t) => sum + (t.realizedPnl || 0), 0)
+      .filter((t) => t.status === "closed" && t.realizedPnl != null)
+      .reduce((sum, t) => sum + (t.realizedPnl || 0), 0);
 
-    const vault = computeVaultState(config.vaultInitialCapital, openTrades, closedPnl)
-    const history = getVaultHistory(72)
+    const vault = computeVaultState(
+      config.vaultInitialCapital,
+      openTrades,
+      closedPnl,
+    );
+    const history = getVaultHistory(72);
 
     return NextResponse.json({
       ...vault,
       positions: openTrades,
       history,
-    })
+    });
   } catch (error) {
-    console.error('[API] /api/vault error:', error)
-    return NextResponse.json({ error: 'Failed to fetch vault state' }, { status: 500 })
+    console.error("[API] /api/vault error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch vault state" },
+      { status: 500 },
+    );
   }
 }

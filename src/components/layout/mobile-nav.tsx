@@ -126,7 +126,7 @@ export function MobileNav() {
                   <div className="mt-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                     <p className="text-[9px] uppercase tracking-[0.08em] mb-1" style={{ color: '#333' }}>Active Pairs</p>
                     {activePairs.map((pair) => (
-                      <p key={pair} className="text-[10px] font-mono" style={{ color: 'rgba(255,100,90,0.7)' }}>
+                      <p key={pair} className="text-[10px] font-mono" style={{ color: '#22c55e' }}>
                         {pair}
                       </p>
                     ))}

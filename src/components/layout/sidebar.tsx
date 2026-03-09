@@ -170,7 +170,7 @@ export function Sidebar() {
                   <p
                     key={pair}
                     className="text-[10px] font-mono leading-relaxed"
-                    style={{ color: "rgba(255,100,90,0.7)" }}
+                    style={{ color: '#22c55e' }}
                   >
                     {pair}
                   </p>

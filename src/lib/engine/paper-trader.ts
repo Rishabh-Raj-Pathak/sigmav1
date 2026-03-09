@@ -36,11 +36,8 @@ export function updatePositionState(
   const newFundingCollected = trade.fundingCollected + fundingEarned
   const newBorrowingPaid = trade.borrowingPaid + borrowingCost
 
-  // Delta-neutral: price PnL is ~0 (spot gains offset perp losses)
-  // Small random drift to simulate imperfect hedging
-  const seed = trade.openedAt + Math.floor(Date.now() / 60000)
-  const drift = (Math.sin(seed) * 0.0001) * trade.positionSizeUsd
-  const unrealizedPnl = newFundingCollected - newBorrowingPaid + drift
+  // Delta-neutral: net P&L is funding income minus borrowing cost
+  const unrealizedPnl = newFundingCollected - newBorrowingPaid
 
   return {
     ...trade,

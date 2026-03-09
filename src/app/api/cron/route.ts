@@ -1,8 +1,11 @@
-import { NextResponse } from 'next/server'
-import { getEnrichedMarkets } from '@/lib/api/gmx'
-import { generateSimulatedVenueRates } from '@/lib/engine/funding-analyzer'
-import { detectOpportunities, shouldExitPosition } from '@/lib/engine/opportunity-detector'
-import { updatePositionState } from '@/lib/engine/paper-trader'
+import { NextResponse } from "next/server";
+import { getEnrichedMarkets } from "@/lib/api/gmx";
+import { generateSimulatedVenueRates } from "@/lib/engine/funding-analyzer";
+import {
+  detectOpportunities,
+  shouldExitPosition,
+} from "@/lib/engine/opportunity-detector";
+import { updatePositionState } from "@/lib/engine/paper-trader";
 import {
   insertFundingRateSnapshot,
   insertSimulatedVenueRate,
@@ -15,22 +18,22 @@ import {
   expireOldOpportunities,
   insertSignal,
   getAllTrades,
-} from '@/lib/db/queries'
-import { computeVaultState } from '@/lib/engine/vault-simulator'
-import { opportunityToRecord } from '@/lib/engine/opportunity-detector'
+} from "@/lib/db/queries";
+import { computeVaultState } from "@/lib/engine/vault-simulator";
+import { opportunityToRecord } from "@/lib/engine/opportunity-detector";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export async function POST() {
   try {
-    const markets = await getEnrichedMarkets()
-    const now = Math.floor(Date.now() / 1000)
-    const config = getStrategyConfig()
+    const markets = await getEnrichedMarkets();
+    const now = Math.floor(Date.now() / 1000);
+    const config = getStrategyConfig();
 
-    let snapshotsStored = 0
-    let opportunitiesDetected = 0
-    let tradesUpdated = 0
-    let tradesExited = 0
+    let snapshotsStored = 0;
+    let opportunitiesDetected = 0;
+    let tradesUpdated = 0;
+    let tradesExited = 0;
 
     // 1. Store funding rate snapshots
     for (const market of markets) {
@@ -49,80 +52,88 @@ export async function POST() {
         openInterestShort: market.openInterestShort,
         spotPrice: market.spotPrice,
         timestamp: now,
-      })
-      snapshotsStored++
+      });
+      snapshotsStored++;
 
       // Store simulated venue rates
-      const simRates = generateSimulatedVenueRates(market.fundingRateLong, market.tokenSymbol, now)
+      const simRates = generateSimulatedVenueRates(
+        market.fundingRateLong,
+        market.tokenSymbol,
+        now,
+      );
       for (const rate of simRates) {
-        insertSimulatedVenueRate(rate)
+        insertSimulatedVenueRate(rate);
       }
     }
 
     // 2. Detect and store opportunities
-    const candidates = detectOpportunities(markets, config)
+    const candidates = detectOpportunities(markets, config);
     for (const candidate of candidates.slice(0, 10)) {
-      const record = opportunityToRecord(candidate)
-      insertOpportunity(record)
-      opportunitiesDetected++
+      const record = opportunityToRecord(candidate);
+      insertOpportunity(record);
+      opportunitiesDetected++;
     }
 
     // 3. Expire old opportunities
-    expireOldOpportunities(30)
+    expireOldOpportunities(30);
 
     // 4. Update open trades
-    const openTrades = getOpenTrades()
+    const openTrades = getOpenTrades();
     for (const trade of openTrades) {
-      const market = markets.find((m) => m.tokenSymbol === trade.tokenSymbol)
-      if (!market) continue
+      const market = markets.find((m) => m.tokenSymbol === trade.tokenSymbol);
+      if (!market) continue;
 
-      const elapsedHours = (now - trade.openedAt) / 3600
-      const lastUpdateHours = trade.currentPrice ? 0.00833 : elapsedHours // ~30 seconds
+      const elapsedHours = (now - trade.openedAt) / 3600;
+      const lastUpdateHours = trade.currentPrice ? 0.00833 : elapsedHours; // ~30 seconds
 
       const updated = updatePositionState(
         trade,
         market.spotPrice,
         market.fundingRateLong,
         market.borrowingRateLong,
-        lastUpdateHours
-      )
+        lastUpdateHours,
+      );
 
       updateTradeState(
         trade.id!,
         updated.currentPrice!,
         updated.fundingCollected,
         updated.borrowingPaid,
-        updated.unrealizedPnl
-      )
-      tradesUpdated++
+        updated.unrealizedPnl,
+      );
+      tradesUpdated++;
 
       // Check exit conditions
-      const exitCheck = shouldExitPosition(updated, market, config)
+      const exitCheck = shouldExitPosition(updated, market, config);
       if (exitCheck.exit) {
-        const realizedPnl = updated.fundingCollected - updated.borrowingPaid
-        closeTrade(trade.id!, exitCheck.reason, realizedPnl, market.spotPrice)
-        tradesExited++
+        const realizedPnl = updated.fundingCollected - updated.borrowingPaid;
+        closeTrade(trade.id!, exitCheck.reason, realizedPnl, market.spotPrice);
+        tradesExited++;
 
         insertSignal({
           tokenSymbol: trade.tokenSymbol,
-          signalType: 'exit',
-          action: 'close',
+          signalType: "exit",
+          action: "close",
           reason: exitCheck.reason,
           executed: true,
           timestamp: now,
-        })
+        });
       }
     }
 
     // 5. Store vault snapshot
-    const updatedOpenTrades = getOpenTrades()
-    const allTrades = getAllTrades(200)
+    const updatedOpenTrades = getOpenTrades();
+    const allTrades = getAllTrades(200);
     const closedPnl = allTrades
-      .filter((t) => t.status === 'closed' && t.realizedPnl != null)
-      .reduce((sum, t) => sum + (t.realizedPnl || 0), 0)
+      .filter((t) => t.status === "closed" && t.realizedPnl != null)
+      .reduce((sum, t) => sum + (t.realizedPnl || 0), 0);
 
-    const vaultState = computeVaultState(config.vaultInitialCapital, updatedOpenTrades, closedPnl)
-    insertVaultSnapshot(vaultState)
+    const vaultState = computeVaultState(
+      config.vaultInitialCapital,
+      updatedOpenTrades,
+      closedPnl,
+    );
+    insertVaultSnapshot(vaultState);
 
     return NextResponse.json({
       success: true,
@@ -132,9 +143,9 @@ export async function POST() {
       tradesUpdated,
       tradesExited,
       marketsCount: markets.length,
-    })
+    });
   } catch (error) {
-    console.error('[API] /api/cron error:', error)
-    return NextResponse.json({ error: 'Cron tick failed' }, { status: 500 })
+    console.error("[API] /api/cron error:", error);
+    return NextResponse.json({ error: "Cron tick failed" }, { status: 500 });
   }
 }

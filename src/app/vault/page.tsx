@@ -49,7 +49,10 @@ export default function VaultPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <Card title="P&L History" subtitle="Cumulative profit & loss">
-          <PnlChart data={pnlData} />
+          <PnlChart
+            data={pnlData}
+            initialCapital={vault ? vault.totalValueUsd - vault.totalPnl : undefined}
+          />
         </Card>
         <RebalanceHistory />
       </div>

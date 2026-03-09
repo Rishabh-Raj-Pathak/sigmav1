@@ -34,3 +34,11 @@ export const DEFAULT_RISK_PARAMS = {
   minConfidence: 0.3,
   spreadPersistenceMinutes: 10,
 }
+
+/** Deep-link to the perpetuals trading page for each supported venue */
+export const DEX_TRADE_URLS: Record<string, string> = {
+  'GMX':         'https://app.gmx.io/#/trade',
+  'GMX v2':      'https://app.gmx.io/#/trade',
+  'HyperLiquid': 'https://app.hyperliquid.xyz/trade',
+  'Paradex':     'https://app.paradex.trade/perpetuals',
+}

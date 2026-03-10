@@ -14,14 +14,6 @@ const BRAND_RED = "#e0323c";
 const BRAND_GREEN = "#1fa854";
 const LABEL_COLOR = "#7a7a7a";
 
-/** Opens the long + short DEX pages in new tabs for a given opportunity. */
-function openDexTabs(longVenue: string, shortVenue: string, tokenSymbol: string) {
-  const urls = [
-    getVenueTradeUrl(longVenue, tokenSymbol),
-    getVenueTradeUrl(shortVenue, tokenSymbol),
-  ]
-  urls.forEach((url) => window.open(url, "_blank", "noopener,noreferrer"))
-}
 
 export function OpportunityFeed() {
   const { data: opportunities, isLoading } = useOpportunities();

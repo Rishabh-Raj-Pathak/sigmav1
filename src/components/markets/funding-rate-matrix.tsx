@@ -56,13 +56,6 @@ function CountdownCell({ longVenue, shortVenue }: { longVenue: string; shortVenu
   )
 }
 
-function openDexTabs(longVenue: string, shortVenue: string, tokenSymbol: string) {
-  const urls = [
-    getVenueTradeUrl(longVenue, tokenSymbol),
-    getVenueTradeUrl(shortVenue, tokenSymbol),
-  ]
-  urls.forEach((url) => window.open(url, '_blank', 'noopener,noreferrer'))
-}
 
 export function FundingRateMatrix({ onRowClick }: FundingRateMatrixProps) {
   const { data: rates, isLoading } = useFundingRates()
@@ -73,6 +66,7 @@ export function FundingRateMatrix({ onRowClick }: FundingRateMatrixProps) {
   const handleTakePosition = async (row: Row) => {
     const { bestLong, bestShort, maxSpread } = row.venueComparison
     if (!bestLong || !bestShort || maxSpread <= 0) return
+
     setTakingToken(row.tokenSymbol)
     try {
       const res = await fetch('/api/paper-trade', {

@@ -89,8 +89,9 @@ export function Heatmap({ data }: HeatmapProps) {
         }}
       >
         {/* Empty spacer for token label column */}
-        <div />
+        <div className='w-[3rem]' />
         <div
+          className='border-red-800'
           style={{
             display: 'grid',
             gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
@@ -123,14 +124,13 @@ export function Heatmap({ data }: HeatmapProps) {
         {data.map((row, rowIdx) => (
           <div
             key={row.tokenSymbol}
-            className="flex items-center"
-            style={{ gap: '6px' }}
+            className="flex items-center overflow-x-hidden"
           >
             {/* Token label */}
             <span
               className="shrink-0 truncate text-right"
               style={{
-                width: '4.5rem',
+                width: '3rem',
                 fontSize: '10px',
                 fontFamily: "'JetBrains Mono', monospace",
                 fontWeight: 500,
@@ -145,7 +145,7 @@ export function Heatmap({ data }: HeatmapProps) {
 
             {/* Cell row */}
             <div
-              className="flex-1"
+              className="flex-1 ml-4"
               style={{
                 display: 'grid',
                 gridTemplateColumns: `repeat(${columnCount}, 1fr)`,

@@ -73,9 +73,6 @@ export function FundingRateMatrix({ onRowClick }: FundingRateMatrixProps) {
   const handleTakePosition = async (row: Row) => {
     const { bestLong, bestShort, maxSpread } = row.venueComparison
     if (!bestLong || !bestShort || maxSpread <= 0) return
-
-    openDexTabs(bestLong, bestShort, row.tokenSymbol)
-
     setTakingToken(row.tokenSymbol)
     try {
       const res = await fetch('/api/paper-trade', {

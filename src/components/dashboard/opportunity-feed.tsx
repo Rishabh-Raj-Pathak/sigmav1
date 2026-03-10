@@ -10,7 +10,7 @@ import { useOpportunities } from "@/lib/hooks/use-opportunities";
 import { formatAnnualizedRate, formatPercentage } from "@/lib/utils/formatting";
 import { getVenueTradeUrl } from "@/lib/utils/constants";
 
-const BRAND_RED   = "#e0323c";
+const BRAND_RED = "#e0323c";
 const BRAND_GREEN = "#1fa854";
 const LABEL_COLOR = "#7a7a7a";
 
@@ -31,9 +31,6 @@ export function OpportunityFeed() {
   const handleOpenTrade = async (
     opp: NonNullable<typeof opportunities>[number],
   ) => {
-    // 1. Open DEX tabs immediately — must be before any await
-    openDexTabs(opp.longVenue, opp.shortVenue, opp.tokenSymbol);
-
     // 2. Record paper trade
     setTakingId(opp.id ?? -1);
     try {
@@ -41,13 +38,13 @@ export function OpportunityFeed() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          opportunityId:  opp.id,
-          tokenSymbol:    opp.tokenSymbol,
-          entryPrice:     opp.entryPrice,
-          longVenue:      opp.longVenue,
-          shortVenue:     opp.shortVenue,
-          estimatedApr:   opp.estimatedApr,
-          riskScore:      opp.riskScore,
+          opportunityId: opp.id,
+          tokenSymbol: opp.tokenSymbol,
+          entryPrice: opp.entryPrice,
+          longVenue: opp.longVenue,
+          shortVenue: opp.shortVenue,
+          estimatedApr: opp.estimatedApr,
+          riskScore: opp.riskScore,
           positionSizeUsd: 10000,
           leverage: 1,
         }),

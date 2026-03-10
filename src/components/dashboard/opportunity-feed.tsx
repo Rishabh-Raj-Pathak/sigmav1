@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { useOpportunities } from "@/lib/hooks/use-opportunities";
 import { formatAnnualizedRate, formatPercentage } from "@/lib/utils/formatting";
-import { getVenueTradeUrl } from "@/lib/utils/constants";
+
 
 const BRAND_RED = "#e0323c";
 const BRAND_GREEN = "#1fa854";

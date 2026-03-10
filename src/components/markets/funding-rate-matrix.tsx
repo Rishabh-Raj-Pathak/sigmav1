@@ -9,7 +9,7 @@ import { DataTable, type Column } from '@/components/ui/data-table'
 import { TableSkeleton } from '@/components/ui/skeleton'
 import { useFundingRates, type FundingRateWithComparison } from '@/lib/hooks/use-funding-rates'
 import { formatRate, formatAnnualizedRate, formatPrice, formatPercentage } from '@/lib/utils/formatting'
-import { getVenueTradeUrl } from '@/lib/utils/constants'
+
 import { useNearestPayoutCountdown } from '@/lib/hooks/use-countdown'
 
 type Row = FundingRateWithComparison & Record<string, unknown>
